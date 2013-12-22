@@ -1,4 +1,5 @@
 from random import randint
+from pprint import pprint
 
 def openFile(filename):
     """
@@ -27,22 +28,60 @@ def randomChunking(words,percentage=0):
     
     IDEA: Couldn't this be done recursively? The sub-problem
     is whether or not the 0th word and the 1st word should be
-    chunked together.
+    chunked together. If it is, then the 0th + 1st is now the 0th,
+    and the problem repeats. But in Python, it's just as
+    memory intensive, as there is no tail recursion optimization.
     """
-    chunks = []
+    chunks = [words[0]]
+    words = words[1:]
     while len(words) > 0:
-        roll = randint(1,99)
-        if 
+        if randint(1,99)<percentage:
+            chunks[-1] = "".join([chunks[-1],words[0]])
+        else:
+            chunks.append(words[0])
+        words = words[1:]
+    return chunks
 
-def randomNewLine(words):
+def randomNewLine(words,percentage=50):
     """
+    Makes chunks into coherent (haha) lines with a newline character
+    at the end.
+    
+    IDEA:This is remarkably similar to randomChunking...is there a way
+    to make this better?
     """
-    pass
+    lines = [words[0]]
+    words = words[1:]
+    while len(words) > 0:
+        if randint(1,99)<percentage:
+            lines[-1] = " ".join([lines[-1],words[0]])
+        else:
+            lines.append(words[0] + "\n")
+        words = words[1:]
+    return lines
 
-def randomTabbing(words):
+def randomTabbing(poem,percentageLine=20,percentageTabs=30,colGuard=80):
     """
     Cummings also would randomize the tabbing.
+    percentageLine is the chance of a line being altered
+    percentageTabs is the chance of a line having more than one tab
+    colGuard is the cutoff point (if a line exceeds 79, no more tabs)
     """
+    newPoem = []
+    for line in poem:
+        roll = randint(1,99)
+        if randint(1,99) < percentageLine:
+            tabBuffer = "\t"
+            while len(tabBuffer) * 4 + len(line) < 79:
+                roll = randint(1,99)
+                if roll < percentageTabs:
+                    tabBuffer = tabBuffer + "\t"
+                else:
+                    newPoem.append("".join([tabBuffer,line]))
+                    break
+        else:
+            newPoem.append(line)
+    return newPoem
 
 def randomCapitalization(words,percentage=0):
     """
@@ -69,7 +108,7 @@ def randomCase(words,percentageWord=0,percentageLetter=0):
             newWords.append(word)
     return newWords
         
-def main(filename):
+def main(filein,fileout):
     """
     Flow of operations:
     1. Open file and get word list
@@ -80,17 +119,24 @@ def main(filename):
     6. Randomizing tabbing of each line
     7. Output into screen or file
     """
-    words = openFile("sample.txt")
+    words = openFile(filein)
     words = randomCapitalization(words,10)
     words = randomCase(words,20,20)
-    words = randomChunk(words,20)
-    print words
+    words = randomChunking(words,20)
+    words = randomNewLine(words,80)
+    words = randomTabbing(words,80)
+    
+    with open(fileout,"w") as f:
+        for elem in words:
+            f.write(elem)
+    for elem in words:
+        print elem
     
 
 if __name__ == "__main__":
     """
     Test stuff, delete me when done.
     """
-    main("sample.txt")
+    main("sample.txt","poem.txt")
     
             
