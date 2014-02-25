@@ -1,3 +1,4 @@
+import argparse
 from random import randint
 from pprint import pprint
 
@@ -108,7 +109,7 @@ def randomCase(words,percentageWord=0,percentageLetter=0):
             newWords.append(word)
     return newWords
         
-def main(filein,fileout):
+def main(args):
     """
     Flow of operations:
     1. Open file and get word list
@@ -119,16 +120,21 @@ def main(filein,fileout):
     6. Randomizing tabbing of each line
     7. Output into screen or file
     """
-    words = openFile(filein)
-    words = randomCapitalization(words,10)
-    words = randomCase(words,20,20)
-    words = randomChunking(words,20)
-    words = randomNewLine(words,80)
-    words = randomTabbing(words,80)
-    
-    with open(fileout,"w") as f:
-        for elem in words:
-            f.write(elem)
+    words = openFile(args.INFILE)
+    if args.letter:
+        words = randomCapitalization(words,10)
+    if args.word:
+        words = randomCase(words,20,20)
+    if args.chunking:
+        words = randomChunking(words,20)
+    if args.independent:
+        words = randomNewLine(words,80)
+    if args.tabs:
+        words = randomTabbing(words,80)
+    if args.o:
+        with open(args.o,"w") as f:
+            for elem in words:
+                f.write(elem)
     for elem in words:
         print elem
     
@@ -137,6 +143,20 @@ if __name__ == "__main__":
     """
     Test stuff, delete me when done.
     """
-    main("sample.txt","poem.txt")
+    p = argparse.ArgumentParser(description="Command line arg parser")
+    p.add_argument("-l","--letter", help="Randomly capitilizes first letters of words."
+                   ,action="store_true")
+    p.add_argument("-w","--word", help="Randomly capitalizes parts of words."
+                   ,action="store_true")
+    p.add_argument("-c","--chunking", help="Randomly removes spaces between words."
+                   ,action="store_true")
+    p.add_argument("-i","--independent",help="Randomizes which 'chunks' take up lines."
+                   ,action="store_true")
+    p.add_argument("-t","--tabs",help="Randomizes tabbing of lines."
+                   ,action="store_true")
+    p.add_argument("INFILE",help="Your input file path.")
+    p.add_argument("-o", help="Your output file path.")
+    print p.parse_args()
+    main(p.parse_args())
     
             
